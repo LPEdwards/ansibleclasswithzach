@@ -1,0 +1,43 @@
+---
+- name: learning about block and rescue
+  hosts: planetexpress
+  gather_facts: yes
+
+  tasks:
+          - name: Pre-check block
+            block:
+                    - name: precheck step1
+                      shell: "echo 'precheck step1' > example.txt"
+
+                    - name: precheck step2
+                      shell: "echo 'precheck step2' >> example.txt"
+
+                    - name: a real example of a precheck step
+                      when: ansible_os_family != "Debian"
+                      fail:
+                              msg: "Precheck FAILED"
+                      
+            rescue:
+                    - name: precheck failed
+                      fail:
+                              msg: "Precheck FAILED for {{ inventory_hostname }}! Nothing to roll back, Exiting ..." 
+
+          - name: Maintenance block
+            block:
+                    - name: maintenance step1
+                      shell: "echo 'maintenance step 3' >> example.txt"
+
+                    - name: maintenance step2
+                      shell: "/bin/false"
+            rescue:
+                    - name: back out maintenance step1
+                      lineinfile:
+                              path: example.txt
+                              state: absent
+                              line: "maintenance step 3"
+
+                    - name: fail out of playbook
+                      fail:
+                              msg: "Maintenance block FAILED. Rollback completed. Exiting"
+                             
+

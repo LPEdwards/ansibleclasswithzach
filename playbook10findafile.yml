@@ -1,0 +1,40 @@
+---
+- name: Find files and fetch them back to the Controller
+  gather_facts: yes
+  hosts: planetexpress
+
+  vars:
+          patt: "*.pcap,*.pcapng,*.txt"
+          pathy: "~/"
+
+  tasks:
+          # find a file
+          # register the results (save the results that come back)
+          - name: Find / files
+            find:
+                paths: "{{ pathy }}" 
+                patterns: "{{ patt }}"
+                # size: 10m
+                recurse: yes
+            register: results
+
+          - name: what the heck is in results
+            debug:
+                    var: results.files
+                    verbosity: 1
+
+          # create a directory to store our results in
+          - name: create a directory to save our results in
+            file: 
+              path: "~/searchresults/{{ inventory_hostname }}"
+              state: directory
+            delegate_to: localhost
+          #
+          # parse the results that come back (loop)
+          # pull them back to the Controller (fetch module)
+          - name: pull our files back to the controller
+            fetch:
+                    src: "{{ item.path }}"
+                    dest: "~/searchresults/{{ inventory_hostname }}/"
+                    flat: yes
+            loop: "{{ results.files }}"  

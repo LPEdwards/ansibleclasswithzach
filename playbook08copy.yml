@@ -1,0 +1,22 @@
+---
+- name: copying files from controller to hosts
+  hosts: planetexpress:!bender:!zoidberg
+
+  tasks:
+    - name: copy fry's resume to hosts
+      copy:
+        src: ~/ans/files/fryresume.txt # on the controller
+        #dest: ~/fryresume.txt # home directory on hosts
+        dest: "/home/{{ ansible_user }}/fryresume.txt"
+
+        # - name: remove the file we just copied over
+        # file:
+        # path: "/home/{{ ansible_user }}/fryresume.txt"
+        # state: absent
+
+    - name: download a file to my remote servers
+      get_url:
+              url: http://www.clamav.net/downloads/production/clamav-0.99.3.tar.gz
+              dest: ~/clamav-0.99.3.tar.gz
+
+
